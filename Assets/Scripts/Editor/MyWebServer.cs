@@ -1,18 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
+using UnityEditor.AddressableAssets.HostingServices;
 
-public class MyWebServer : MonoBehaviour
+/// <summary>
+/// 简易 webserver，仅仅 hosting  ServerData/[BuildTarget] 根目录
+/// </summary>
+public class MyWebServer : HttpHostingService
 {
-    // Start is called before the first frame update
-    void Start()
+    /// <inheritdoc/>
+    public override void StartHostingService()
     {
-        
+        var root = $"ServerData/{UnityEditor.BuildTarget.StandaloneWindows64}";
+        HostingServiceContentRoots.Clear();
+        HostingServiceContentRoots.Add(root);
+        base.StartHostingService();
     }
 
-    // Update is called once per frame
-    void Update()
+    /// <inheritdoc/>
+    protected override string FindFileInContentRoots(string relativePath)
     {
-        
+        var root = $"ServerData/{UnityEditor.BuildTarget.StandaloneWindows64}";
+        relativePath = relativePath.TrimStart('/');
+        relativePath = relativePath.TrimStart('\\');
+        var fullPath = Path.Combine(root, relativePath).Replace('\\', '/');
+        if (File.Exists(fullPath))
+            return fullPath;
+        return null;
     }
 }
